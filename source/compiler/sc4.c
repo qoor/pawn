@@ -215,7 +215,7 @@ SC_FUNC void writetrailer(void)
  */
 SC_FUNC void begcseg(void)
 {
-  if (sc_status!=statSKIP && (curseg!=sIN_CSEG || fcurrent!=fcurseg)) {
+  if (sc_status!=statSKIP && (curseg!=sIN_CSEG || fcurrent!=fcurseg) && !sc_output) {
     stgwrite("\n");
     stgwrite("CODE ");
     outval(fcurrent,FALSE);
@@ -233,7 +233,7 @@ SC_FUNC void begcseg(void)
  */
 SC_FUNC void begdseg(void)
 {
-  if (sc_status!=statSKIP && (curseg!=sIN_DSEG || fcurrent!=fcurseg)) {
+  if (sc_status!=statSKIP && (curseg!=sIN_DSEG || fcurrent!=fcurseg) && !sc_output) {
     stgwrite("\n");
     stgwrite("DATA ");
     outval(fcurrent,FALSE);

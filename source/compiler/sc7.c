@@ -1342,7 +1342,7 @@ static int rebuffer(char *str)
 
 static int filewrite(char *str)
 {
-  if (sc_status==statWRITE)
+  if (sc_status==statWRITE && !sc_output)
     return pc_writeasm(outf,str);
   return TRUE;
 }
@@ -1558,6 +1558,8 @@ SC_FUNC int stgget(int *index,cell *code_index)
  */
 SC_FUNC void stgset(int onoff)
 {
+  if (!sc_output)
+    return;
   staging=onoff;
   if (staging){
     assert(stgidx==0);

@@ -96,6 +96,7 @@ SC_VDEFINE int pc_memflags=0;               /* special flags for the stack/heap 
 SC_VDEFINE int pc_naked=FALSE;              /* if true mark following function as naked */
 SC_VDEFINE int pc_compat=FALSE;             /* running in compatibility mode? */
 SC_VDEFINE int pc_recursion=FALSE;          /* enable detailed recursion report? */
+SC_VDEFINE int sc_output=FALSE;
 
 SC_VDEFINE constvalue_root sc_automaton_tab = { NULL, NULL}; /* automaton table */
 SC_VDEFINE constvalue_root sc_state_tab = { NULL, NULL};   /* state table */

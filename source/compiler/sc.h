@@ -945,6 +945,8 @@ SC_VDECL FILE *outf;          /* file written to */
 
 SC_VDECL jmp_buf errbuf;      /* target of longjmp() on a fatal error */
 
+SC_VDECL int sc_output;       /* allow output files */
+
 /*  Possible entries for "emit_flags"
  *  Bits: 0     (efBLOCK) multiline ('()' block) syntax
  *        1     (efEXPR) used within an expression

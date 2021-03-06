@@ -558,11 +558,13 @@ int pc_compile(int argc, char *argv[])
   if (inpf_org==NULL)
     error(100,inpfname);
   freading=TRUE;
-  outf=(FILE*)pc_openasm(outfname); /* first write to assembler file (may be temporary) */
-  if (outf==NULL)
-    error(101,outfname);
+  if (!sc_output) {
+    outf=(FILE*)pc_openasm(outfname); /* first write to assembler file (may be temporary) */
+    if (outf==NULL)
+      error(101,outfname);
+  }
   /* immediately open the binary file, for other programs to check */
-  if (sc_asmfile || sc_listing) {
+  if (sc_asmfile || sc_listing || !sc_output) {
     binf=NULL;
   } else {
     binf=(FILE*)pc_openbin(binfname);
@@ -714,7 +716,7 @@ cleanup:
     inpf=NULL;
   }
   /* write the binary file (the file is already open) */
-  if (!(sc_asmfile || sc_listing) && errnum==0 && jmpcode==0) {
+  if (!(sc_asmfile || sc_listing) && errnum==0 && jmpcode==0 && sc_output) {
     assert(binf!=NULL);
     pc_resetasm(outf);          /* flush and loop back, for reading */
     #if !defined SC_LIGHT
@@ -1128,6 +1130,9 @@ static void parseoptions(int argc,char **argv,char *oname,char *ename,char *pnam
           about();
         sc_listing=TRUE;        /* skip second pass & code generation */
         break;
+      case 'n':
+        sc_output=FALSE;
+        break;
       case 'o':
         if (oname)
           strlcpy(oname,option_value(ptr),_MAX_PATH); /* set name of (binary) output file */
@@ -1494,6 +1499,7 @@ static void about(void)
 #endif
     pc_printf("         -i<name> path for include files\n");
     pc_printf("         -l       create list file (preprocess only)\n");
+    pc_printf("         -n       Not create output file(s)\n");
     pc_printf("         -o<name> set base name of (P-code) output file\n");
     pc_printf("         -O<num>  optimization level (default=-O%d)\n",pc_optimize);
     pc_printf("             0    no optimization\n");
@@ -2373,11 +2379,13 @@ static int declloc(int fstatic)
         lval.constval=0;
         lval.tag=tag;
         check_userop(NULL,ctag,lval.tag,2,NULL,&ctag);
-        store(&lval);
-        markexpr(sEXPR,NULL,0); /* full expression ends after the store */
-        assert(staging);        /* end staging phase (optimize expression) */
-        stgout(staging_start);
-        stgset(FALSE);
+        if (sc_output) {
+          store(&lval);
+          markexpr(sEXPR,NULL,0); /* full expression ends after the store */
+          assert(staging);        /* end staging phase (optimize expression) */
+          stgout(staging_start);
+          stgset(FALSE);
+        }
         check_tagmismatch(tag,ctag,TRUE,-1);
         /* if the variable was not explicitly initialized, reset the
          * "uWRITTEN" flag that store() set */
@@ -3891,9 +3899,9 @@ static int newfunc(char *firstname,int firsttag,int fpublic,int fstatic,int stoc
       } /* if */
       /* mark argument as written if it was written in another definition */
       lvar->usage|=sym->dim.arglist[i].usage & uWRITTEN;
-    } /* if */    
+    } /* if */
   } /* for */
-  
+
   testsymbols(&loctab,0,TRUE,TRUE);     /* test for unused arguments and labels */
   delete_symbols(&loctab,0,TRUE,TRUE);  /* clear local variables queue */
   assert(loctab.next==NULL);
@@ -5569,7 +5577,7 @@ static int test(int label,int parens,int invert)
   symbol *sym;
   int localstaging=FALSE;
 
-  if (!staging) {
+  if (!staging && sc_output) {
     stgset(TRUE);               /* start staging */
     localstaging=TRUE;
     #if !defined NDEBUG
