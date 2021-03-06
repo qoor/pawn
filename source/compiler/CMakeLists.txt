@@ -1,10 +1,10 @@
 project(pawnc C)
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.0)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../../cmake)
 
 set(VERSION_MAJOR 3)
-set(VERSION_MINOR 10)
+set(VERSION_MINOR 11)
 set(VERSION_BUILD 10)
 set(VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_BUILD})
 set(VERSION_STR ${VERSION})
