@@ -1,4 +1,3 @@
-project(pawnc C)
 cmake_minimum_required(VERSION 3.0)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../../cmake)
@@ -9,6 +8,8 @@ set(VERSION_BUILD 10)
 set(VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_BUILD})
 set(VERSION_STR ${VERSION})
 math(EXPR VERSION_INT "${VERSION_MAJOR} << 8 | ${VERSION_MINOR}")
+
+project(pawnc LANGUAGES C VERSION ${VERSION})
 
 # check for optional include files
 include(CheckIncludeFile)
@@ -88,8 +89,7 @@ set(PAWNC_SRCS
   sclist.c
   scmemfil.c
   scstate.c
-  scvars.c
-  version.h)
+  scvars.c)
 set_source_files_properties(sc1.c COMPILE_FLAGS -DNO_MAIN)
 if(WIN32)
   set(PAWNC_SRCS ${PAWNC_SRCS} libpawnc.rc)
@@ -118,6 +118,7 @@ elseif(MINGW)
     "-Wl,--enable-stdcall-fixup")
   set_target_properties(pawnc PROPERTIES PREFIX "")
 endif()
+target_include_directories(pawnc INTERFACE $<INSTALL_INTERFACE:include/pawnc>)
 
 # The Pawn compiler driver (console program)
 set(PAWNCC_SRCS pawncc.c)
@@ -150,9 +151,45 @@ if(UNIX)
 endif()
 
 # Install compiler and disassembler binaries
+install(FILES
+        lstring.h
+        memfile.h
+        sc.h
+        ${CMAKE_BINARY_DIR}/version.h
+        DESTINATION include/pawnc/compiler)
+install(FILES
+        hashtable/hashtable.h
+        hashtable/wrap_hashtable.h
+        DESTINATION include/pawnc/compiler/hashtable)
+install(FILES
+        ../amx/amx.h
+        ../amx/amxaux.h
+        ../amx/amxcons.h
+        ../amx/amxdbg.h
+        ../amx/amxgc.h
+        ../amx/fpattern.h
+        ../amx/osdefs.h
+        ../amx/term_ga.h
+        ../amx/termwin.h
+        DESTINATION include/pawnc/amx)
+if(UNIX)
+  install(FILES
+          ../linux/binreloc.h
+          ../linux/getch.h
+          ../linux/sclinux.h
+          DESTINATION include/pawnc/linux)
+endif()
+
 install(TARGETS pawnc pawncc pawndisasm
+        EXPORT PawnCTargets
         RUNTIME DESTINATION bin
-        LIBRARY DESTINATION lib)
+        LIBRARY DESTINATION lib
+        INCLUDES DESTINATION include)
+install(EXPORT PawnCTargets
+        FILE PawnCTargets.cmake
+        NAMESPACE pawnc::
+        DESTINATION lib/cmake/pawnc)
+
 if(MSVC)
   # If building with Microsoft Visual C++ also install corresponding
   # Program Database files (for debugging)
@@ -162,6 +199,17 @@ if(MSVC)
           ${PROJECT_BINARY_DIR}/\${CMAKE_INSTALL_CONFIG_NAME}/pawndisasm.pdb
     DESTINATION bin)
 endif()
+
+include(CMakePackageConfigHelpers)
+configure_package_config_file(${CMAKE_SOURCE_DIR}/PawnCConfig.cmake.in
+  "${CMAKE_BINARY_DIR}/PawnCConfig.cmake"
+  INSTALL_DESTINATION lib/cmake/pawnc)
+write_basic_package_version_file(${CMAKE_BINARY_DIR}/PawnCConfigVersion.cmake
+  COMPATIBILITY AnyNewerVersion)
+install(FILES
+  "${CMAKE_BINARY_DIR}/PawnCConfig.cmake"
+  "${CMAKE_BINARY_DIR}/PawnCConfigVersion.cmake"
+  DESTINATION lib/cmake/pawnc)
 
 # Generate targets for running compiler tests
 include(CTest)
