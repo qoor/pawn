@@ -119,6 +119,9 @@ elseif(MINGW)
   set_target_properties(pawnc PROPERTIES PREFIX "")
 endif()
 target_include_directories(pawnc INTERFACE $<INSTALL_INTERFACE:include/pawnc>)
+if(UNIX)
+  target_include_directories(pawnc INTERFACE $<INSTALL_INTERFACE:include/pawnc/linux>)
+endif()
 
 # The Pawn compiler driver (console program)
 set(PAWNCC_SRCS pawncc.c)
@@ -181,12 +184,12 @@ if(UNIX)
 endif()
 
 install(TARGETS pawnc pawncc pawndisasm
-        EXPORT PawnCTargets
+        EXPORT pawnc-targets
         RUNTIME DESTINATION bin
         LIBRARY DESTINATION lib
         INCLUDES DESTINATION include)
-install(EXPORT PawnCTargets
-        FILE PawnCTargets.cmake
+install(EXPORT pawnc-targets
+        FILE pawnc-targets.cmake
         NAMESPACE pawnc::
         DESTINATION lib/cmake/pawnc)
 
@@ -201,14 +204,14 @@ if(MSVC)
 endif()
 
 include(CMakePackageConfigHelpers)
-configure_package_config_file(${CMAKE_SOURCE_DIR}/PawnCConfig.cmake.in
-  "${CMAKE_BINARY_DIR}/PawnCConfig.cmake"
+configure_package_config_file(${CMAKE_SOURCE_DIR}/pawnc-config.cmake.in
+  "${CMAKE_BINARY_DIR}/pawnc-config.cmake"
   INSTALL_DESTINATION lib/cmake/pawnc)
-write_basic_package_version_file(${CMAKE_BINARY_DIR}/PawnCConfigVersion.cmake
+write_basic_package_version_file(${CMAKE_BINARY_DIR}/pawnc-config-version.cmake
   COMPATIBILITY AnyNewerVersion)
 install(FILES
-  "${CMAKE_BINARY_DIR}/PawnCConfig.cmake"
-  "${CMAKE_BINARY_DIR}/PawnCConfigVersion.cmake"
+  "${CMAKE_BINARY_DIR}/pawnc-config.cmake"
+  "${CMAKE_BINARY_DIR}/pawnc-config-version.cmake"
   DESTINATION lib/cmake/pawnc)
 
 # Generate targets for running compiler tests
