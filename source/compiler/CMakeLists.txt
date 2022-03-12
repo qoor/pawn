@@ -89,7 +89,7 @@ set(PAWNC_SRCS
   scmemfil.c
   scstate.c
   scvars.c
-  version.h)
+  ${CMAKE_CURRENT_BINARY_DIR}/version.h)
 set_source_files_properties(sc1.c COMPILE_FLAGS -DNO_MAIN)
 if(WIN32)
   set(PAWNC_SRCS ${PAWNC_SRCS} libpawnc.rc)
